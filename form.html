@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses App</title>
+</head>
+<body>
+    <h1>Expenses App</h1>
+    <form method="POST" action="/submit-form" id="myForm">
+        <label for="amount">Enter the Amount : </label>
+        <input type="number" name="amount" id="amount"><br>
+        <label for="description">Enter the decription</label>
+        <input type="text" name="description" id="description"><br>
+        <label for="category">Choose Expense Category</label>
+        <select id="category" name="category"><br>
+            <option value="shopping">Shopping</option>
+            <option value="travelling">Travelling</option>
+            <option value="movie">Movie</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="miscellaneous">Miscellaneous</option>
+        </select><br>
+        <input type="submit" value="Add Expenses"><br>
+    </form>
+    <div id="expenses"></div>
+    <script>
+        window.onload = function(){
+            fetch('/expenses')
+                .then(response => response.json())
+                .then(data=>{
+                    const formData = document.getElementById('expenses');
+                    formData.innerHTML = '';
+                    data.forEach(expense=>{
+                        const li = document.createElement('li');
+                        li.textContent = `${expense.amount} - ${expense.description} - ${expense.category}`;
+                        formData.appendChild(li);
+
+                        const delbtn = document.createElement('input')
+                        delbtn.type="button"
+                        delbtn.value = "delete"
+                        delbtn.onclick =()=>{
+                            deleteExpense(expense.id);
+                        }
+
+                        const editbtn = document.createElement('input')
+                        editbtn.type="button"
+                        editbtn.value="edit"
+                        editbtn.onclick = () => {
+                            editExpense(expense.id);
+                        }
+
+                        li.appendChild(delbtn);
+                        li.appendChild(editbtn);
+                        formData.appendChild(li);
+                    });
+                })
+                    .catch(err=>{
+                        console.log(err.message);
+                        res.status(500).send(err,"Something went wrong")  
+                    });
+                }
+    </script>
+</body>
+
+</html>
