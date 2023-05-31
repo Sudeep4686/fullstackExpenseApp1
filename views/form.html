@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses App</title>
     <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
     <h1>Expenses App</h1>
@@ -25,59 +26,81 @@
         <input type="submit" value="Add Expenses"><br>
     </form>
     <div id="expenses"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+
     <script>
+
         window.onload = function(){
-            fetch('/expenses')
-                .then(response => response.json())
-                .then(data=>{
-                    const formData = document.getElementById('expenses');
-                    formData.innerHTML = '';
-                    data.forEach(expense=>{
-                        const li = document.createElement('li');
-                        li.textContent = `${expense.amount} - ${expense.description} - ${expense.category}`;
-                        formData.appendChild(li);
-
-                        const delbtn = document.createElement('input')
-                        delbtn.type="button"
-                        delbtn.value = "delete"
-                        delbtn.onclick =()=>{
-                            deleteExpense(expense.id);
-                        }
-
-                        function deleteExpense(id){
-                            console.log("deleted the expense with this id",id);
-                            fetch('/Expense/delete-expense/'+id,{
-                                method:'DELETE'
-                            })
-                            .then(response=>response.json())
-                            .then(data =>{
-                                console.log(data.message);
-                                const formData = document.getElementById('expenses');
-                                const deletedExpense = formData.querySelector(`li[${id}]`);
-                                deletedExpense.remove();
-                            })
-                            .catch(err => {
-                                console.log(err.message);
+                    fetch('/expenses')
+                        .then(response => response.json())
+                        .then(data => {
+                            const formData = document.getElementById('expenses');
+                            formData.innerHTML = '';
+                            data.forEach(expense => {
+                                showOnScreen(expense);
                             });
-                        }
-
-                        const editbtn = document.createElement('input')
-                        editbtn.type="button"
-                        editbtn.value="edit"
-                        editbtn.onclick = () => {
-                            editExpense(expense.id);
-                        }
-
-                        li.appendChild(delbtn);
-                        li.appendChild(editbtn);
-                        formData.appendChild(li);
-                    });
-                })
-                    .catch(err=>{
-                        console.log(err.message);
-                        res.status(500).send(err,"Something went wrong")  
-                    });
+                        })
+                        .catch(err => {
+                            console.log('Error fetching expense data:', err);
+                        });
                 }
+
+                function showOnScreen(expense) {
+                const expensesList = document.getElementById('expenses');
+                const expenseId = `expense-${expense.id}`;
+                const li = document.createElement('li');
+                li.textContent = `Amount: ${expense.amount} - Description: ${expense.description} - Category: ${expense.category}`;
+                expensesList.appendChild(li);
+
+                const editBtn = document.createElement('input');
+                editBtn.type = 'button';
+                editBtn.value = 'edit';
+                editBtn.onclick = () => {
+                    const updatedAmount = prompt('Enter updated Amount:', expense.amount);
+                    const updatedDescription = prompt('Enter updated description:', expense.description);
+                    const updatedCategory = prompt('Enter updated Category:', expense.category);
+
+                    const updatedExpense = {
+                        id : expense.id,
+                        amount: updatedAmount,
+                        description: updatedDescription,
+                        category: updatedCategory,
+                    };
+                    axios.put(`http://localhost:4010/expenses/editExpense/${expense.id}`, updatedExpense)
+                    .then(response=>{
+                        console.log("Editing Expense: ", updatedExpense);
+                        location.reload()
+                    })
+                    .catch(error =>{
+                        console.log("Error Editing Expense in frontend", error);
+                    })
+                };
+
+                const deleteBtn = document.createElement('input');
+                deleteBtn.type = 'button';
+                deleteBtn.value = 'delete';
+                deleteBtn.onclick = () => {
+                    console.log('Deleting expense with ID:', expense.id);
+                    fetch(`/Expense/delete-expense/${expense.id}`, {
+                    method: 'DELETE'
+                })
+                .then(response=>response.json())
+                .then(data=>{
+                    console.log(data.message);
+                    const formData = document.getElementById('expenses');
+                    const deletedExpense = formData.querySelector(`li[id="${expenseId}"]`);
+                    deletedExpense.remove();
+                })
+                .catch(err=>{
+                    console.log(err.message);
+                })
+                }
+
+                li.appendChild(editBtn);
+                li.appendChild(deleteBtn);
+                expensesList.appendChild(li);
+            }
+
     </script>
 </body>
 

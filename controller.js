@@ -23,4 +23,29 @@ async function insertData(req,res){
         };
 }
 
-module.exports={insertData};
+async function editExpense(req,res){
+    try{
+        const {amount,description,category} = req.body;
+        const expense = await Expense.findByPk(req.params.id);
+        if (!expense){
+            return res.status(404).send({message:'Expense not found'});
+        }
+        expense.amount = amount;
+        expense.description = description;
+        expense.category = category;
+        await expense.save();
+
+        res.send({message:"Expense updated successfully",expense});
+    }catch(error){
+        console.log(error);
+        res.status(500).send({message : "Error updating expense in backend." });
+    }
+    
+}
+
+
+module.exports = {
+    insertData : insertData,
+    editExpense: editExpense
+};
+  

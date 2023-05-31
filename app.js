@@ -2,14 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const controller = require('./controller');
+const axios = require('axios');
 
 const sequelize = require('./util/database');
 
 const Expense = require('./models/Expense');
 
 const app = express();
-
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
@@ -53,5 +52,7 @@ app.delete('/Expense/delete-expense/:id', async(req,res)=>{
         });
     }
 })
+
+app.put(`/expenses/editExpense/:id`, controller.editExpense);
 
 app.listen(4010);
